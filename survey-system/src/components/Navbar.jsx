@@ -5,8 +5,7 @@ import "./Navbar.css";
  
 const NAV_ITEMS = [
   {
-    label: "Take Survey",
-    path: "/survey/survey-001",
+    label: "Take Survey", path: "/survey/latest",
     icon: (
       <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
         <rect x="2" y="2" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1.5"/>
@@ -77,7 +76,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="navbar-inner">
         {/* Brand */}
-        <button className="navbar-brand" onClick={() => handleNav("/survey/survey-001")}>
+        <button className="navbar-brand" onClick={() => handleNav("/surveys")}>
           <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
             <rect width="32" height="32" rx="8" fill="#2d5a3d"/>
             <path d="M9 16h14M16 9v14" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>

@@ -240,21 +240,64 @@ export default function Dashboard() {
   const [surveys,     setSurveys]     = useState([]);
   const [responses,   setResponses]   = useState([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [categoryResponses, setCategoryResponses] = useState([]);
+
+
+  const handleExportCSV = () => {
+    const rows = [];
+
+    // Header row
+    rows.push(["Type", "Survey/Category", "Question", "Answer", "Submitted At"]);
+
+    // Builder survey responses
+    responses.forEach((r) => {
+      const surveyTitle = surveys[0]?.title || "Custom Survey";
+      r.answers.forEach((a) => {
+        const question = surveys[0]?.questions?.[a.questionIndex]?.text || `Q${a.questionIndex + 1}`;
+        rows.push(["Builder Survey", surveyTitle, question, a.answer, new Date(r.submittedAt).toLocaleString()]);
+      });
+    });
+
+    // Category survey responses
+    categoryResponses.forEach((r) => {
+      Object.entries(r.answers).forEach(([question, answer]) => {
+        rows.push(["Pre-built Survey", `${r.category} — ${r.surveyName}`, question, Array.isArray(answer) ? answer.join(", ") : answer, new Date(r.submittedAt).toLocaleString()]);
+      });
+    });
+
+    // Convert to CSV string
+    const csv = rows.map(row =>
+      row.map(cell => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")
+    ).join("\n");
+
+    // Trigger download
+    const blob = new URL(`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`);
+    const link = document.createElement("a");
+    link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+    link.download = "survey-responses.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
-    API.get("/surveys")
-      .then((res) => {
-        setSurveys(res.data);
-        if (res.data.length > 0) {
-          return API.get(`/responses/${res.data[0]._id}`);
-        }
-      })
-      .then((res) => {
-        if (res) setResponses(res.data);
-        setLoadingData(false);
-      })
-      .catch(() => setLoadingData(false));
-  }, []);
+  Promise.all([
+    API.get("/surveys"),
+    API.get("/responses/category/all")
+  ])
+    .then(([surveysRes, categoryRes]) => {
+      setSurveys(surveysRes.data);
+      setCategoryResponses(categoryRes.data || []);
+      if (surveysRes.data.length > 0) {
+        return API.get(`/responses/${surveysRes.data[0]._id}`);
+      }
+    })
+    .then((res) => {
+      if (res) setResponses(res.data);
+      setLoadingData(false);
+    })
+    .catch(() => setLoadingData(false));
+}, []);
 
   // Use real data if available, otherwise fall back to mock data
   const meta     = surveys.length > 0
@@ -283,7 +326,7 @@ export default function Dashboard() {
             <h1 className="dash-title">{meta.title}</h1>
             <p className="dash-desc">{surveyMeta.description}</p>
           </div>
-          <button className="btn-export">
+          <button className="btn-export" onClick={handleExportCSV}>
             <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
               <path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M3 12h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -354,8 +397,24 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
             </div>
+             {categoryResponses.length > 0 && (
+              <div className="section-card">
+                <h2 className="section-title">Pre-built Survey Responses</h2>
+                <p className="section-sub">{categoryResponses.length} responses from pre-built surveys</p>
+                {categoryResponses.map((r, i) => (
+                  <div key={i} className="response-card" style={{ borderBottom: "1px solid #f0ece6", paddingBottom: "12px", marginBottom: "12px" }}>
+                    <p style={{ fontWeight: 600 }}>{r.category} — {r.surveyName}</p>
+                    <p style={{ fontSize: 12, color: "#9c9a92" }}>{new Date(r.submittedAt).toLocaleString()}</p>
+                    <pre style={{ fontSize: 12, background: "#f5f2ec", padding: "8px", borderRadius: "6px", marginTop: "6px" }}>
+                      {JSON.stringify(r.answers, null, 2)}
+                    </pre>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
+          
 
         {/* ── Questions tab ── */}
         {activeTab === "questions" && (

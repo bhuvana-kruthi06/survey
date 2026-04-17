@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import {
   RadioQuestion,
@@ -12,6 +12,7 @@ import "./SurveyPage.css";
 
 export default function SurveyPage() {
   const { id } = useParams();
+   const navigate = useNavigate();
   const [survey,    setSurvey]    = useState(null);
   const [loading,   setLoading]   = useState(true);
   const [current,   setCurrent]   = useState(0);
@@ -60,19 +61,20 @@ export default function SurveyPage() {
     if (current < total - 1) {
       animateTransition("forward", () => setCurrent((c) => c + 1));
     } else {
-      try {
-        await API.post("/responses", {
-          surveyId: survey._id,
-          answers: Object.entries(answers).map(([questionId, answer], index) => ({
-            questionIndex: index,
-            answer: Array.isArray(answer) ? answer.join(", ") : String(answer),
-          })),
-        });
-      } catch (err) {
-        console.error("Failed to save response:", err.message);
-      }
-      setSubmitted(true);
-    }
+  try {
+    await API.post("/responses", {
+      surveyId: survey._id,
+      answers: Object.entries(answers).map(([questionId, answer], index) => ({
+        questionIndex: index,
+        answer: Array.isArray(answer) ? answer.join(", ") : String(answer),
+      })),
+    });
+  } catch (err) {
+    console.error("Failed to save response:", err.message);
+  }
+  setSubmitted(true);
+setTimeout(() => { navigate("/builder"); }, 2000);
+}
   };
 
   const goBack = () => {

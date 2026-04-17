@@ -32,7 +32,7 @@ export default function LoginPage() {
       }
  
       if (result.success) {
-        navigate("/survey/survey-001");
+        navigate("/surveys");
       } else {
         setError(result.error);
         setLoading(false);
