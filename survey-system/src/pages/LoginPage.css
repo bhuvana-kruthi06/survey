@@ -365,13 +365,50 @@
   to { transform: rotate(360deg); }
 }
  
-/* ── Demo hint ── */
+/* ── Demo hint & Admin link ── */
+.login-footer-links {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
 .demo-hint {
   text-align: center;
   font-size: 12px;
-  color: #b8b4ac;
-  margin-top: 20px;
+  color: #8c8980;
+  margin: 0;
   line-height: 1.5;
+}
+
+.admin-access-prompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #66635b;
+  padding-top: 8px;
+  border-top: 1px dashed #e8e4dd;
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-link-btn {
+  background: none;
+  border: none;
+  color: #2d5a3d;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.admin-link-btn:hover {
+  color: #1b3d28;
+  text-decoration: underline;
 }
  
 /* ── Responsive ── */

@@ -21,6 +21,7 @@ const surveySchema = new mongoose.Schema({
   estimatedTime: { type: String, default: "2 min" },
   questions:     [questionSchema],
   createdBy:     { type: String, default: "admin" },
+  status:        { type: String, enum: ["active", "inactive", "archived"], default: "active" },
   createdAt:     { type: Date,   default: Date.now },
 });
  

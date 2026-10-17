@@ -7,32 +7,62 @@ const app = express();
 
 // ── Middleware ──
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-  ]
+  origin: true, // Allow any development origin (localhost:5173, 5174, 5175, etc.)
+  credentials: true,
 }));
 app.use(express.json());
 
 // ── Routes ──
+app.use("/api/auth",      require("./routes/auth"));
+app.use("/api/admin",     require("./routes/admin"));
 app.use("/api/surveys",   require("./routes/surveys"));
 app.use("/api/responses", require("./routes/responses"));
-app.use('/api/results',   require('./routes/responses'));
+app.use("/api/results",   require("./routes/responses"));
 
-// ── Test route ──
+// ── Health / test route ──
 app.get("/", (req, res) => {
-  res.send("SurveyFlow API is running ✅");
+  res.json({
+    status: "ok",
+    message: "SurveyFlow API is running ✅",
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// ── Start server FIRST, then connect MongoDB ──
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    uptime: process.uptime(),
+  });
+});
+
+// ── Start server ──
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// ── Connect MongoDB ──
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected successfully"))
-  .catch((err) => console.error("MongoDB connection failed:", err.message));
+// ── Connect MongoDB with Graceful Fallback ──
+const primaryUri = process.env.MONGO_URI;
+const fallbackUri = "mongodb://127.0.0.1:27017/survey";
+
+async function connectDatabase() {
+  if (primaryUri) {
+    try {
+      await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 4000 });
+      console.log("MongoDB connected successfully to primary URI");
+      return;
+    } catch (err) {
+      console.warn(`Primary MongoDB connection failed (${err.message}). Connecting to local fallback...`);
+    }
+  }
+
+  try {
+    await mongoose.connect(fallbackUri, { serverSelectionTimeoutMS: 4000 });
+    console.log("MongoDB connected successfully to local instance (127.0.0.1:27017/survey)");
+  } catch (err) {
+    console.error("MongoDB connection failed completely:", err.message);
+  }
+}
+
+connectDatabase();

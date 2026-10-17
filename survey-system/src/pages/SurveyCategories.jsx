@@ -1,4 +1,5 @@
 import { useState } from "react";
+import API from "../api/axios";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -343,20 +344,29 @@ function SurveyModal({ survey, category, onClose }) {
   const setAnswer = (i, val) => setAnswers((prev) => ({ ...prev, [i]: val }));
 
   const handleSubmit = async () => {
-  try {
-    await fetch("https://survey-system-backend-x9wk.onrender.com/api/responses/category", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await API.post("/responses/category", {
         surveyName: survey.name,
         category: category.name,
         answers: answers,
-      }),
-    });
-  } catch (err) {
-    console.error("Failed to save:", err);
-  }
-  setSubmitted(true);
+      });
+    } catch (err) {
+      console.warn("API save warning, attempting fallback:", err.message);
+      try {
+        await fetch("https://survey-system-backend-x9wk.onrender.com/api/responses/category", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            surveyName: survey.name,
+            category: category.name,
+            answers: answers,
+          }),
+        });
+      } catch (fallbackErr) {
+        console.error("Failed to save category response:", fallbackErr);
+      }
+    }
+    setSubmitted(true);
   setTimeout(() => {
     onClose();
     window.location.href = "/builder";

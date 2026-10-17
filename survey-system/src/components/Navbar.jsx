@@ -121,12 +121,12 @@ export default function Navbar() {
                 </div>
                 <div>
                   <p className="dropdown-name">{user?.name}</p>
-                  <p className="dropdown-role">Logged in</p>
+                  <p className="dropdown-role">{user?.role === "admin" ? "Administrator" : "Logged in"}</p>
                 </div>
               </div>
- 
+
               <div className="dropdown-divider" />
- 
+
               {/* Nav items */}
               <p className="dropdown-section-label">Navigation</p>
               <nav className="dropdown-nav">
@@ -150,9 +150,32 @@ export default function Navbar() {
                   );
                 })}
               </nav>
- 
+
+              {user?.role === "admin" && (
+                <>
+                  <div className="dropdown-divider" />
+                  <p className="dropdown-section-label">Administration</p>
+                  <button
+                    className="dropdown-nav-item"
+                    style={{ background: "#eaf3de", color: "#2d5a3d", fontWeight: 600, border: "1px solid #c2e0aa" }}
+                    onClick={() => handleNav("/admin/dashboard")}
+                  >
+                    <span className="dni-icon" style={{ color: "#2d5a3d" }}>
+                      <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
+                        <path d="M9 2L3 5v5c0 4 2.8 7.8 6 9 3.2-1.2 6-5 6-9V5l-6-3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                        <path d="M7 9l2 2 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                    <span className="dni-text">
+                      <span className="dni-label" style={{ color: "#2d5a3d" }}>Admin Console</span>
+                      <span className="dni-desc" style={{ color: "#4f7a5c" }}>Governance & analytics</span>
+                    </span>
+                  </button>
+                </>
+              )}
+
               <div className="dropdown-divider" />
- 
+
               {/* Sign out */}
               <button className="dropdown-signout" onClick={handleLogout}>
                 <svg viewBox="0 0 16 16" fill="none" width="15" height="15">

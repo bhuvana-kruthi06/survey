@@ -18,26 +18,29 @@ export default function LoginPage() {
     setError("");
   };
  
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
- 
-    setTimeout(() => {
+
+    try {
       let result;
       if (tab === "login") {
-        result = login(form.email, form.password);
+        result = await login(form.email, form.password);
       } else {
-        result = register(form.name, form.email, form.password);
+        result = await register(form.name, form.email, form.password);
       }
- 
+
       if (result.success) {
         navigate("/surveys");
       } else {
         setError(result.error);
         setLoading(false);
       }
-    }, 600); // small delay to show loading state
+    } catch (err) {
+      setError(err.message || "An unexpected error occurred.");
+      setLoading(false);
+    }
   };
  
   const switchTab = (t) => {
@@ -257,10 +260,23 @@ export default function LoginPage() {
             </button>
           </form>
  
-          {/* Demo hint */}
-          <p className="demo-hint">
-            Demo: use any email + password (6+ chars) to continue
-          </p>
+          <div className="login-footer-links">
+            <p className="demo-hint">
+              {tab === "login"
+                ? "Enter your registered email and password to access surveys."
+                : "Enter your name, email, and password (6+ chars) to create an account."}
+            </p>
+            <div className="admin-access-prompt">
+              <span>Authorized Administrator?</span>
+              <button
+                type="button"
+                className="admin-link-btn"
+                onClick={() => navigate("/admin/login")}
+              >
+                Access Secure Admin Portal &rarr;
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
